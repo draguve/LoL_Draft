@@ -31,6 +31,10 @@ torchvision = [
 
 [tool.ruff]
 line-length = 120
+unfixable = ["F401"]
+
+[lint]
+unfixable = ["F401"]
 
 # [tool.ruff.format]
 # exclude = ["Externals/*"]
