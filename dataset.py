@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from tqdm import tqdm
 
 DATASET_LOCATION = "Dataset"
 
@@ -106,3 +107,15 @@ def parse_group(group):
     data["draft"] = draft
     data["blue_win"] = blue_team["result"] == 1
     return data
+
+
+def get_games(df):
+    games = []
+    unparseable = []
+    for gameid, group in tqdm(df.groupby("gameid"), "Parsing games"):
+        try:
+            game = parse_group(group)
+            games.append(game)
+        except:
+            unparseable.append(gameid)
+    return games, unparseable

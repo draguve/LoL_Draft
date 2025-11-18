@@ -1,18 +1,19 @@
 # %% Imports
 from pprint import pprint
 
-from dataset import load_dataset, parse_group
+from dataset import get_games, load_dataset
+from tokenizer import Tokenizer
 
 DATASET_LOCATION = "Dataset"
 
-
+# %% Load dataset
 df = load_dataset()
 df_complete = df.loc[df["datacompleteness"] == "complete"]
 print(df_complete.shape)
 
 # %% C
-
-for gameid, group in df_complete.groupby("gameid"):
-    game = parse_group(group)
-    pprint(game)
-    break
+games, unparseable_games = get_games(df)
+print(len(games), len(unparseable_games))
+# %% Check
+tokenizer = Tokenizer(df)
+pprint(len(tokenizer.player_to_id))
