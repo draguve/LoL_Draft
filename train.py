@@ -12,8 +12,14 @@ df_complete = df.loc[df["datacompleteness"] == "complete"]
 print(df_complete.shape)
 
 # %% C
-games, unparseable_games = get_games(df)
-print(len(games), len(unparseable_games))
+games, unparseable_games, ungrouped_games = get_games(df)
+print(len(games), len(unparseable_games), len(ungrouped_games))
 # %% Check
 tokenizer = Tokenizer(df)
 pprint(len(tokenizer.player_to_id))
+
+# for game in games:
+#     print(game["gameid"])
+
+# %% Fearless
+pprint(games[-1])
