@@ -22,4 +22,5 @@ pprint(len(tokenizer.player_to_id))
 #     print(game["gameid"])
 
 # %% Fearless
-pprint(games[-1])
+game_tokens = tokenizer.tokenize_game(games[-1])
+pprint(game_tokens)
