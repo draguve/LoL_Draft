@@ -89,28 +89,28 @@ def parse_group(group):
 
     # --- Ban Phase 1 ---
     for i in range(3):
-        draft.append({"type": "Ban", "champion": blue_bans[i]})
-        draft.append({"type": "Ban", "champion": red_bans[i]})
+        draft.append({"type": "Ban", "champion": blue_bans[i], "side": "blue"})
+        draft.append({"type": "Ban", "champion": red_bans[i], "side": "red"})
 
     # --- Pick Phase 1 ---
-    draft.append({"type": "Pick", "champion": blue_picks[0]})
-    draft.append({"type": "Pick", "champion": red_picks[0]})
-    draft.append({"type": "Pick", "champion": red_picks[1]})
-    draft.append({"type": "Pick", "champion": blue_picks[1]})
-    draft.append({"type": "Pick", "champion": blue_picks[2]})
-    draft.append({"type": "Pick", "champion": red_picks[2]})
+    draft.append({"type": "Pick", "champion": blue_picks[0], "side": "blue"})
+    draft.append({"type": "Pick", "champion": red_picks[0], "side": "red"})
+    draft.append({"type": "Pick", "champion": red_picks[1], "side": "red"})
+    draft.append({"type": "Pick", "champion": blue_picks[1], "side": "blue"})
+    draft.append({"type": "Pick", "champion": blue_picks[2], "side": "blue"})
+    draft.append({"type": "Pick", "champion": red_picks[2], "side": "red"})
 
     # --- Ban Phase 2 ---
-    draft.append({"type": "Ban", "champion": red_bans[3]})
-    draft.append({"type": "Ban", "champion": blue_bans[3]})
-    draft.append({"type": "Ban", "champion": red_bans[4]})
-    draft.append({"type": "Ban", "champion": blue_bans[4]})
+    draft.append({"type": "Ban", "champion": red_bans[3], "side": "red"})
+    draft.append({"type": "Ban", "champion": blue_bans[3], "side": "blue"})
+    draft.append({"type": "Ban", "champion": red_bans[4], "side": "red"})
+    draft.append({"type": "Ban", "champion": blue_bans[4], "side": "blue"})
 
     # --- Pick Phase 2 ---
-    draft.append({"type": "Pick", "champion": red_picks[3]})
-    draft.append({"type": "Pick", "champion": blue_picks[3]})
-    draft.append({"type": "Pick", "champion": blue_picks[4]})
-    draft.append({"type": "Pick", "champion": red_picks[4]})
+    draft.append({"type": "Pick", "champion": red_picks[3], "side": "red"})
+    draft.append({"type": "Pick", "champion": blue_picks[3], "side": "blue"})
+    draft.append({"type": "Pick", "champion": blue_picks[4], "side": "blue"})
+    draft.append({"type": "Pick", "champion": red_picks[4], "side": "red"})
 
     assert len(draft) == 20
     data["draft"] = draft

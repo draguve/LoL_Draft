@@ -16,11 +16,12 @@ games, unparseable_games, ungrouped_games = get_games(df)
 print(len(games), len(unparseable_games), len(ungrouped_games))
 # %% Check
 tokenizer = Tokenizer(df)
-pprint(len(tokenizer.player_to_id))
 
 # for game in games:
 #     print(game["gameid"])
 
 # %% Fearless
 game_tokens = tokenizer.tokenize_game(games[-1])
-pprint(game_tokens)
+parsed = tokenizer.parse_tokens(game_tokens)
+for token, parsed in zip(game_tokens, parsed):
+    print(f"{token} ----- {parsed}")

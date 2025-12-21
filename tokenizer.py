@@ -3,42 +3,96 @@ def build_tokeizer(df, games):
 
 
 class Tokenizer:
+    SPECIAL_TOKENS = ["<pad>", "<unk>"]  # IDs 0, 1
+    ACTION_TOKENS = [
+        "pick_blue",
+        "pick_red",
+        "ban_blue",
+        "ban_red",
+        "fearless_ban",
+    ]
+
     def __init__(self, df):
-        champs = df["champion"].unique()
-        cleaned_champs = [champ for champ in champs if champ == champ]
-        sorted_champs = sorted(cleaned_champs)
-        self.champion_to_id = {
-            champ: i + 1 for i, champ in enumerate(sorted_champs)
-        }
+        self.token_to_id = {}
+        next_id = 0
 
-        players = df["playerid"].unique()
-        cleaned_players = [player for player in players if player == player]
-        self.player_to_id = {
-            player: i + 1 for i, player in enumerate(cleaned_players)
-        }
+        # 1) Special tokens
+        for tok in self.SPECIAL_TOKENS:
+            self.token_to_id[tok] = next_id
+            next_id += 1
+        # next_id now = 2
 
-        versions = df["patch"].unique()
-        cleaned_version = [
-            version for version in versions if version == version
-        ]
-        self.version_to_id = {
-            version: i + 1 for i, version in enumerate(cleaned_version)
-        }
+        # 2) Champions (start at ID 2)
+        champs = sorted(x for x in df["champion"].dropna().unique())
+        self.champion_start_id = next_id
+        for c in champs:
+            self.token_to_id[f"champ:{c}"] = next_id
+            next_id += 1
+        self.champion_end_id = next_id - 1
+
+        # 3) Patches
+        versions = sorted(x for x in df["patch"].dropna().unique())
+        self.version_start_id = next_id
+        for v in versions:
+            self.token_to_id[f"patch:{v}"] = next_id
+            next_id += 1
+        self.version_end_id = next_id - 1
+
+        # 4) Actions (pick/ban tokens)
+        self.actions_start_id = next_id
+        for a in self.ACTION_TOKENS:
+            self.token_to_id[a] = next_id
+            next_id += 1
+        self.actions_end_id = next_id - 1
+
+        # 5) Players (moved to the end)
+        players = sorted(x for x in df["playerid"].dropna().unique())
+        self.player_start_id = next_id
+        for p in players:
+            self.token_to_id[f"player:{p}"] = next_id
+            next_id += 1
+        self.player_end_id = next_id - 1
+
+        # Reverse mapping
+        self.id_to_token = {i: t for t, i in self.token_to_id.items()}
 
     def tokenize_game(self, game):
         tokens = []
-        tokens.append(("patch", self.version_to_id[game["patch"]]))
+        tokens.append(self.token_to_id[f"patch:{game['patch']}"])
         if game["is_fearless"]:
             for champ in list(sorted(game["fearless_banned"])):
-                tokens.append(("ban", self.champion_to_id[champ]))
+                tokens.extend(
+                    [
+                        self.token_to_id["fearless_ban"],
+                        self.token_to_id[f"champ:{champ}"],
+                    ]
+                )
         for item in game["draft"]:
+            side = item["side"]
             champ = item["champion"]
-            champ_token = self.champion_to_id[champ]
+            champ_token = self.token_to_id[f"champ:{champ}"]
             match item["type"]:
                 case "Pick":
                     playerid = game["champs"][champ]["playerid"]
-                    player_token = self.player_to_id[playerid]
-                    tokens.append(("pick", champ_token, player_token))
+                    player_token = self.token_to_id[f"player:{playerid}"]
+                    tokens.extend(
+                        [
+                            self.token_to_id[f"pick_{side}"],
+                            champ_token,
+                            player_token,
+                        ]
+                    )
                 case "Ban":
-                    tokens.append(("ban", champ_token))
+                    tokens.extend(
+                        [
+                            self.token_to_id[f"ban_{side}"],
+                            champ_token,
+                        ]
+                    )
         return tokens
+
+    def parse_tokens(self, tokens):
+        parsed: list[str] = []
+        for token in tokens:
+            parsed.append(self.id_to_token[token])
+        return parsed
