@@ -1,5 +1,4 @@
-def build_tokeizer(df, games):
-    pass
+import random
 
 
 class Tokenizer:
@@ -56,7 +55,7 @@ class Tokenizer:
         # Reverse mapping
         self.id_to_token = {i: t for t, i in self.token_to_id.items()}
 
-    def tokenize_game(self, game):
+    def tokenize_game(self, game, player_token_prob=1.0):
         tokens = []
         tokens.append(self.token_to_id[f"patch:{game['patch']}"])
         if game["is_fearless"]:
@@ -73,15 +72,19 @@ class Tokenizer:
             champ_token = self.token_to_id[f"champ:{champ}"]
             match item["type"]:
                 case "Pick":
-                    playerid = game["champs"][champ]["playerid"]
-                    player_token = self.token_to_id[f"player:{playerid}"]
                     tokens.extend(
                         [
                             self.token_to_id[f"pick_{side}"],
                             champ_token,
-                            player_token,
                         ]
                     )
+                    if (
+                        player_token_prob == 1.0
+                        or random.random() < player_token_prob
+                    ):
+                        playerid = game["champs"][champ]["playerid"]
+                        player_token = self.token_to_id[f"player:{playerid}"]
+                        tokens.append(player_token)
                 case "Ban":
                     tokens.extend(
                         [
@@ -91,8 +94,16 @@ class Tokenizer:
                     )
         return tokens
 
-    def parse_tokens(self, tokens):
+    def parse_tokens(self, tokens) -> list[str]:
         parsed: list[str] = []
         for token in tokens:
             parsed.append(self.id_to_token[token])
         return parsed
+
+    def print_tokens(self, tokens):
+        parsed = self.parse_tokens(tokens)
+        for token, parsed in zip(tokens, parsed):
+            print(f"{token:<30} - {parsed}")
+
+    def vocab_size(self):
+        return len(self.token_to_id)

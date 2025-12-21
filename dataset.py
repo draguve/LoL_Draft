@@ -46,6 +46,8 @@ def parse_group(group):
         for _, row in group.iterrows()
         if row["position"] != "team"  # skip the team summary rows
     }
+    assert all(isinstance(v["playerid"], str) for v in champ_dict.values())
+    assert all(v["playerid"] != "nan" for v in champ_dict.values())
     assert len(champ_dict) == 10
     data["champs"] = champ_dict
 
@@ -83,6 +85,10 @@ def parse_group(group):
     assert len(blue_picks) == 5
     assert len(red_picks) == 5
     data["champ_pool"] = set(blue_picks + red_picks)
+    for pick in blue_picks:
+        assert pick in champ_dict
+    for pick in red_picks:
+        assert pick in champ_dict
 
     # # --- Draft order reconstruction ---
     draft = []
