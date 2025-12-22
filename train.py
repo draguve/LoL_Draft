@@ -32,6 +32,7 @@ print(
     f"Valid Games: {len(games)} Unparsable:{len(unparseable_games)} Ungrouped {len(ungrouped_games)}"
 )
 tokenizer = Tokenizer(df)
+pad_token = tokenizer.pad_token()
 print(f"Vocab Size: {tokenizer.vocab_size()}")
 
 # %% Dataloaders
@@ -48,20 +49,22 @@ test_dataloader = DataLoader(
 
 # %% Model
 model = LeagueModel(vocab_size=tokenizer.vocab_size()).to(device)
-criterion = nn.BCELoss()
+criterion = nn.BCEWithLogitsLoss(reduction="none")
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
 
 # %% Train Model
 for epoch in range(NUM_EPOCHS):
     model.train()
-    for tokens, blue_wins in train_dataloader:
-        # todo fix blue win size here
-        length = tokens.shape
+    for tokens, blue_wins in tqdm(train_dataloader, desc=f"Training e{epoch}"):
+        B, T = tokens.shape
         tokens = tokens.to(device)
-        blue_wins = blue_wins.to(device)
+        target = blue_wins.to(device).view(B, 1, 1).expand(B, T, 1)
+        mask = (tokens != pad_token).unsqueeze(-1).float()
 
         pred = model(tokens)
-        loss = criterion(pred, blue_wins)
+
+        loss = criterion(pred, target)
+        loss = (loss * mask).sum() / mask.sum().clamp_min(1.0)
 
         optimizer.zero_grad()
         loss.backward()
@@ -69,14 +72,16 @@ for epoch in range(NUM_EPOCHS):
 
     model.eval()
     with torch.no_grad():
-        for tokens, blue_wins in test_dataloader:
-            # todo fix blue win size here
-            length = tokens.shape
+        for tokens, blue_wins in tqdm(test_dataloader, desc=f"Eval e{epoch}"):
+            B, T = tokens.shape
             tokens = tokens.to(device)
-            blue_wins = blue_wins.to(device)
+            target = blue_wins.to(device).view(B, 1, 1).expand(B, T, 1)
+            mask = (tokens != pad_token).unsqueeze(-1).float()
 
-            val_pred = model(tokens)
-            loss = criterion(val_pred, blue_wins)
+            pred = model(tokens)
+
+            loss = criterion(pred, target)
+            loss = (loss * mask).sum() / mask.sum().clamp_min(1.0)
 
 # # %% Check
 # print(list(game["champs"] for game in games))

@@ -107,3 +107,6 @@ class Tokenizer:
 
     def vocab_size(self):
         return len(self.token_to_id)
+
+    def pad_token(self) -> int:
+        return self.token_to_id["<pad>"]

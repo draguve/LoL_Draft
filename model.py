@@ -50,14 +50,14 @@ class LeagueModel(nn.Module):
         )
         self.encoder = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
         self.head = nn.Linear(d_model, num_out_features)
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor):
         h = self.token_emb(x)
         h = self.pos(h)
         h = self.encoder(h)
         h = self.head(h)
-        h = self.sigmoid(h)
+        # h = self.sigmoid(h)
         return h
 
 
